@@ -1,12 +1,15 @@
 pipeline { 
-    agent{ 
-       docker{ 
-         image 'maven:3.9.8-sapmachine-21' 
-         args '-v $HOME/.m2:/root/.m2' 
-       } 
-    } 
+    agent any
+
+    tools{
+        maven 'maven 3.9.9'
+    }
+
     stages{ 
-        stage('build'){ 
+        stage('build'){
+            when{
+                changeset "**/worker/**"
+            }
             steps{ 
                 echo 'building worker app' 
                 dir('worker'){ 
@@ -14,28 +17,34 @@ pipeline {
                 } 
             } 
         } 
-        stage('test'){ 
+        stage('test'){
+            when{
+                changeset "**/worker/**"
+            }
             steps{ 
-                echo 'running unit tests on worker app' 
-                dir('worker'){ 
-                  sh 'mvn clean test' 
-                } 
+                echo 'running unit tests on worker app'
+                dir('worker'){
+                  sh 'mvn clean test'
+                }
             } 
         } 
-        stage('package'){ 
+        stage('package'){
+            when{
+                branch 'master'
+                changeset "**/worker/**"
+            }
             steps{ 
                 echo 'packaging worker app into a jarfile'
-                dir('worker'){ 
-                  sh 'mvn package -DskipTests' 
-                  archiveArtifacts artifacts: '**/target/*.jar', fingerprint:  true 
-                } 
+                dir('worker'){
+                  sh 'mvn package -DskipTests'
+                  archiveArtifacts artifacts: '**/target/*.jar', fingerprint:  true
+                }
             } 
         } 
     }
     post{ 
         always{ 
-            echo 'the job is complete' 
-
+            echo 'the job is complete'
     }
   }
 }
