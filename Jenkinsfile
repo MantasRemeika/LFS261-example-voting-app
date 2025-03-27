@@ -2,7 +2,7 @@ pipeline {
     agent none
 
     stages{
-        stage('build-worker'){
+        stage('worker-build'){
             when{
                 changeset "**/worker/**"
             }
@@ -19,7 +19,7 @@ pipeline {
                 }
             }
         }
-        stage('test-worker'){
+        stage('worker-test'){
             when{
                 changeset "**/worker/**"
             }
@@ -36,7 +36,7 @@ pipeline {
                 }
             }
         }
-        stage('package-worker'){
+        stage('worker-package'){
             when{
                 branch 'master'
                 changeset "**/worker/**"
@@ -55,7 +55,7 @@ pipeline {
                 }
             }
         }
-        stage('docker-package-worker'){
+        stage('worker-docker-package'){
             when{
                 branch 'master'
                 changeset "**/worker/**"
@@ -73,7 +73,7 @@ pipeline {
             }
         }
 
-        stage('build-result'){
+        stage('result-build'){
             when{
                 changeset "**/result/**"
             }
@@ -90,7 +90,7 @@ pipeline {
                 }
             }
         }
-        stage('test-result'){
+        stage('result-test'){
             when{
                 changeset "**/result/**"
             }
@@ -108,7 +108,7 @@ pipeline {
                 }
             }
         }
-        stage('docker-package-result'){
+        stage('result-docker-package'){
             when{
                 branch 'master'
                 changeset "**/result/**"
@@ -127,7 +127,7 @@ pipeline {
         }
 
 
-         stage('build-vote'){
+         stage('vote-build'){
              when{
                  changeset "**/vote/**"
              }
@@ -146,7 +146,7 @@ pipeline {
                  }
              }
          }
-         stage('test-vote'){
+         stage('vote-test'){
             when{
                 changeset "**/vote/**"
             }
@@ -166,7 +166,7 @@ pipeline {
              }
          }
 
-       stage('docker-package-vote'){
+       stage('vote-docker-package'){
            when{
                branch 'master'
                changeset "**/vote/**"
@@ -186,6 +186,18 @@ pipeline {
              }
            }
        }
+
+      stage('deploy to dev'){
+         agent any
+         when{
+           branch 'master'
+         }
+         steps{
+           echo 'Deploy instavote app with docker compose'
+           sh 'docker-compose up -d'
+         }
+      }
+
     }
     post{
         always{
