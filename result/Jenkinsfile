@@ -1,0 +1,67 @@
+pipeline {
+    agent none
+
+    tools{
+        nodejs 'NodeJS 22.4.0'
+    }
+
+    stages{
+        stage('build'){
+            when{
+                changeset "**/result/**"
+            }
+            agent{
+                docker{
+                    image 'node:18-slim'
+                    args '-u root'
+                }
+            }
+            steps{
+                echo 'building result app'
+                dir('result'){
+                  sh 'npm install'
+                }
+            }
+        }
+        stage('test'){
+            when{
+                changeset "**/result/**"
+            }
+            agent{
+                docker{
+                    image 'node:18-slim'
+                    args '-u root'
+                }
+            }
+            steps{
+                echo 'running unit tests on result app'
+                dir('result'){
+                  sh 'npm install'
+                  sh 'npm test'
+                }
+            }
+        }
+        stage('docker-package'){
+            when{
+                branch 'master'
+                changeset "**/result/**"
+            }
+            agent any
+            steps{
+                echo 'Packaging result app with docker'
+                script{
+                    docker.withRegistry('https://index.docker.io/v1/', 'dockerlogin') {
+                        def resultImage = docker.build("montemin/result:v${env.BUILD_ID}", "./result")
+                        resultImage.push()
+                        resultImage.push("latest")
+                    }
+                }
+            }
+        }
+    }
+    post{
+        always{
+            echo 'the job is complete'
+    }
+  }
+}
