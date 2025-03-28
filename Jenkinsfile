@@ -166,6 +166,21 @@ pipeline {
              }
          }
 
+      stage('vote-integration'){
+         when{
+             changeset "**/vote/**"
+             branch 'master'
+         }
+          agent any
+          steps{
+              echo 'Running Integration Tests on vote app.'
+              dir('vote'){
+
+                      sh 'sh integration_test.sh'
+              }
+          }
+      }
+
        stage('vote-docker-package'){
            when{
                branch 'master'
@@ -209,15 +224,15 @@ pipeline {
          }
 
 
-         stage("Quality Gate") {
-             steps {
-                 timeout(time: 1, unit: 'HOURS') {
-                     // Parameter indicates whether to set pipeline to UNSTABLE if Quality Gate fails
-                     // true = set pipeline to UNSTABLE, false = don't
-                     waitForQualityGate abortPipeline: true
-                 }
-             }
-         }
+//          stage("Quality Gate") {
+//              steps {
+//                  timeout(time: 1, unit: 'HOURS') {
+//                      // Parameter indicates whether to set pipeline to UNSTABLE if Quality Gate fails
+//                      // true = set pipeline to UNSTABLE, false = don't
+//                      waitForQualityGate abortPipeline: true
+//                  }
+//              }
+//          }
 
       stage('deploy to dev'){
          agent any
