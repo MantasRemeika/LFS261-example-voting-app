@@ -1,0 +1,40 @@
+pipeline {
+  agent {
+    docker {
+      image 'maven:3.9.13-sapmachine-21'
+      args '-v$HOME/.m2:/root/.m2'
+    }
+  }
+  stages {
+    stage('build') {
+      steps {
+        echo 'buildingworkerapp'
+        dir('worker') {
+          sh 'mvncompile'
+        }
+      }
+    }
+    stage('test') {
+      steps {
+        echo 'runningunittestsonworkerapp'
+        dir('worker') {
+          sh 'mvncleantest'
+        }
+      }
+    }
+    stage('package') {
+      steps {
+        echo 'packagingworkerappintoajarfile'
+        dir('worker') {
+          sh 'mvnpackage-DskipTests'
+          archiveArtifactsartifacts: '**/target/*.jar', fingerprint: true
+        }
+      }
+    }
+  }
+  post {
+    always {
+      echo 'thejobiscomplete'
+    }
+  }
+}
